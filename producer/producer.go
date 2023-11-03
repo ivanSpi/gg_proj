@@ -26,10 +26,13 @@ func (p *Producer) Connect(c context.Context) (*kafka.Conn, error) {
 	return kafka.DialLeader(c, "tcp", p.Host, p.Topic, p.Partition)
 }
 
+var (
+	host      = "localhost:9092"
+	topic     = "topic_test"
+	partition = 0
+)
+
 func main() {
-	host := "localhost:9092"
-	topic := "topic_test"
-	partition := 0
 	producer := NewProducer(host, topic, partition)
 	conn, err := producer.Connect(context.Background())
 
