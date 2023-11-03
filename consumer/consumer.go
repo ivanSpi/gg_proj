@@ -8,13 +8,48 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+type SingleBroker struct {
+	Host      string
+	Topic     string
+	Partition int
+	MaxBytes  int
+}
+
+func NewSingleBroker(host, topic string, partition, maxbytes int) *SingleBroker {
+	return &SingleBroker{
+		Host:      host,
+		Topic:     topic,
+		Partition: partition,
+		MaxBytes:  maxbytes,
+	}
+}
+
+func (s *SingleBroker) config() kafka.ReaderConfig {
+	return kafka.ReaderConfig{
+		Brokers:   []string{s.Host},
+		Topic:     s.Topic,
+		Partition: s.Partition,
+		MaxBytes:  s.MaxBytes,
+	}
+}
+
+func (s *SingleBroker) Reader() *kafka.Reader {
+	return kafka.NewReader(
+		s.config(),
+	)
+}
+
+var (
+	topic     = "topic_test"
+	host      = "localhost:9092"
+	maxbytes  = 10e6
+	partition = 0
+)
+
 func main() {
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{"localhost:9092"},
-		Topic:     "topic_test",
-		Partition: 0,
-		MaxBytes:  10e6,
-	})
+	broker := NewSingleBroker(host, topic, partition, int(maxbytes))
+
+	r := broker.Reader()
 
 	r.SetOffset(42)
 
