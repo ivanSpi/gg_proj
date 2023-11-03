@@ -8,15 +8,34 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+type Producer struct {
+	Host      string
+	Topic     string
+	Partition int
+}
+
+func NewProducer(host, topic string, partition int) *Producer {
+	return &Producer{
+		Host:      host,
+		Topic:     topic,
+		Partition: partition,
+	}
+}
+
+func (p *Producer) Connect(c context.Context) (*kafka.Conn, error) {
+	return kafka.DialLeader(c, "tcp", p.Host, p.Topic, p.Partition)
+}
+
 func main() {
+	host := "localhost:9092"
 	topic := "topic_test"
 	partition := 0
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", topic, partition)
+	producer := NewProducer(host, topic, partition)
+	conn, err := producer.Connect(context.Background())
+
 	if err != nil {
 		log.Fatal("failed to dial leader:", err)
 	}
-
-	//conn.SetWriteDeadline(time.Now().Add(time.Second * 10))
 
 	for {
 		time.Sleep(time.Second * 1)
